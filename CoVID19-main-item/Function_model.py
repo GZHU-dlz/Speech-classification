@@ -109,14 +109,6 @@ class TASS(nn.Module):
         k = t if t % 2 else t + 1
         self.conv1 = nn.Conv1d(channel, channel, kernel_size=k, padding=int(k / 2), bias=False)
         self.fc = nn.Conv1d(channel, channel, 1, padding=0, bias=True)
-
-        self.conv2=nn.Conv1d(45,45,kernel_size=k, padding=int(k / 2), bias=False)
-        self.fc1 = nn.Conv1d(45,45,kernel_size=1, padding=0, bias=False)
-
-        self.fc2 = nn.Conv1d(58,58,kernel_size=1, padding=0, bias=False)
-        self.conv3=nn.Conv1d(58,58,kernel_size=k, padding=int(k / 2), bias=False)
-
-
         self.sigmoid = nn.Sigmoid()
         self.mix = Tiss()
         self.attentions=Simam_module()
@@ -130,50 +122,20 @@ class TASS(nn.Module):
         insum_new = self.attentions(insum)
         input_new = input_new.squeeze(0)
         insum_new = insum_new.squeeze(0)
-
-        if x.shape[0] == 64:
-            x1 = self.conv1(x)
-            x_mfcc1 = self.conv1(x_mfcc)
-            x2 = self.fc(x).transpose(-1, -2)
-            x_mfcc2 = self.fc(x_mfcc1).transpose(-1, -2)
-            out1 = torch.sum(torch.matmul(x1, x_mfcc2), dim=1).unsqueeze(-1).unsqueeze(-1)
-            out1 = self.sigmoid(out1)
-            out2 = torch.sum(torch.matmul(x_mfcc1.transpose(-1, -2), x2.transpose(-1, -2)), dim=1).unsqueeze(
+        x.shape[0] == 64:
+        x1 = self.conv1(x)
+        x_mfcc1 = self.conv1(x_mfcc)
+        x2 = self.fc(x).transpose(-1, -2)
+        x_mfcc2 = self.fc(x_mfcc1).transpose(-1, -2)
+        out1 = torch.sum(torch.matmul(x1, x_mfcc2), dim=1).unsqueeze(-1).unsqueeze(-1)
+        out1 = self.sigmoid(out1)
+        out2 = torch.sum(torch.matmul(x_mfcc1.transpose(-1, -2), x2.transpose(-1, -2)), dim=1).unsqueeze(
                 -1).unsqueeze(-1)
-            out2 = self.sigmoid(out2)
-            out = self.mix(out1, out2)
-            out = self.conv1(out.squeeze(-1))
-            out = self.sigmoid(out)
-            input_insum = (input_new * 0.6) + (insum_new * 0.4)
-
-        elif x.shape[0] == 45:
-            x1 = self.conv2(x)
-            x_mfcc1 = self.conv2(x_mfcc)
-            x2 = self.fc1(x).transpose(-1, -2)
-            x_mfcc2 = self.fc1(x_mfcc1).transpose(-1, -2)
-            out1 = torch.sum(torch.matmul(x1, x_mfcc2), dim=1).unsqueeze(-1).unsqueeze(-1)
-            out1 = self.sigmoid(out1)
-            out2 = torch.sum(torch.matmul(x_mfcc1.transpose(-1, -2), x2.transpose(-1, -2)), dim=1).unsqueeze(
-                -1).unsqueeze(-1)
-            out2 = self.sigmoid(out2)
-            out = self.mix(out1, out2)
-            out = self.conv2(out.squeeze(-1))
-            out = self.sigmoid(out)
-            input_insum = (input_new * 0.6) + (insum_new * 0.4)
-        else:
-            x1 = self.conv3(x)
-            x_mfcc1 = self.conv3(x_mfcc)
-            x2 = self.fc2(x).transpose(-1, -2)
-            x_mfcc2 = self.fc2(x_mfcc1).transpose(-1, -2)
-            out1 = torch.sum(torch.matmul(x1, x_mfcc2), dim=1).unsqueeze(-1).unsqueeze(-1)
-            out1 = self.sigmoid(out1)
-            out2 = torch.sum(torch.matmul(x_mfcc1.transpose(-1, -2), x2.transpose(-1, -2)), dim=1).unsqueeze(
-                -1).unsqueeze(-1)
-            out2 = self.sigmoid(out2)
-            out = self.mix(out1, out2)
-            out = self.conv3(out.squeeze(-1))
-            out = self.sigmoid(out)
-            input_insum = (input_new * 0.6) + (insum_new * 0.4)
+        out2 = self.sigmoid(out2)
+        out = self.mix(out1, out2)
+        out = self.conv1(out.squeeze(-1))
+        out = self.sigmoid(out)
+        input_insum = (input_new * 0.6) + (insum_new * 0.4)
 
         return input_insum * out
 
