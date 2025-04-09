@@ -122,7 +122,6 @@ class TASS(nn.Module):
         insum_new = self.attentions(insum)
         input_new = input_new.squeeze(0)
         insum_new = insum_new.squeeze(0)
-        x.shape[0] == 64:
         x1 = self.conv1(x)
         x_mfcc1 = self.conv1(x_mfcc)
         x2 = self.fc(x).transpose(-1, -2)
